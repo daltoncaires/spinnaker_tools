@@ -1186,7 +1186,7 @@ void compute_st(void)
         }
     }
 
-    rtr_mc_set(0, 0xffff5555, 0xffffffff, route);
+    rtr_mc_set(0, 0xffff5554, 0xfffffffe, route);
 }
 
 
@@ -1322,6 +1322,14 @@ void proc_100hz(uint a1, uint a2)
                 compute_st();
                 disable_unidirectional_links();
                 sv->p2p_up = p2p_up = 1;
+
+                // estimate sync0/1 delay (us) from (0, 0)
+                uint nodes = (hop_table[0] & 0x00ffffff) + 1;
+                uint ttr   = ((NODE_DLY_NS * nodes) +
+                              (BRD_DLY_NS * (nodes >> 3))) >> 10;
+
+                // estimate delay to farthest possible chip
+                sv->sync_alignment = TOP_DLY_US - ttr;
 
                 if (srom.flags & SRF_ETH) {
                     uint s = phy_read(PHY_STATUS);
